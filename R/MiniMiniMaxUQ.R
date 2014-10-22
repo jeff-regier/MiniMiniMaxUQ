@@ -24,7 +24,7 @@ sup.dist <- function(a, b) {
 #' @param f.X \eqn{f|_X}, the values of \eqn{f} on \eqn{X}
 #' @param lp.norm the \eqn{L_p} norm for computing the distances between points in \eqn{X}. Defaults to sup-norm.
 #' @param min.distance only pairs of points in \eqn{X} farther apart than this threshold are considered. Defaults to 0.
-
+#' 
 find.K.hat <- function(X, f.X, lp.norm=Inf, min.distance=0) {
   stopifnot(max(X) <= 1. && min(X) >= 0.)
   lp.norm.cpp = if (lp.norm == Inf) -42. else lp.norm
@@ -36,6 +36,7 @@ find.K.hat <- function(X, f.X, lp.norm=Inf, min.distance=0) {
 #' @param f.X \eqn{f|_X}, the values of \eqn{f} on \eqn{X}
 #' @param K.hat the empirical Lipschitz constant of \eqn{f}
 #' @param x the point for which to compute pointwise uncertainty
+#' 
 pointwise.uncertainty <- function(X, f.X, K.hat, x) {
   pointwise_uncertainty(X, f.X, K.hat, x)
 }
@@ -62,6 +63,7 @@ unit.ball.volume <- function(lp.norm, p.dims) {
 #' @param epsilon the maximum uncertainty allowed
 #' @param lp.norm the \eqn{L_p} norm for computing the distances between points in \eqn{[0, 1]^p}. Defaults to sup-norm.
 #' @param K.hat the empirical Lipschitz constant of \eqn{f}. Defaults to find.K.hat(X, f.X).
+#' 
 lower.bound.computational.burden <- function(X, f.X, epsilon, lp.norm=Inf, K.hat=NULL) {
   stopifnot(max(X) <= 1. && min(X) >= 0.)
   stopifnot(epsilon >= 0.)
@@ -91,6 +93,7 @@ int.to.bits <- function(i, p.dims) {
 #' @param n the number of consecutive corners to consider. Defaults to 5000.
 #' @param first.corner the first corner to consider. Defaults to 0.
 #' @param K.hat the empirical Lipschitz constant of \eqn{f}. Defaults to \code{find.K.hat(X, f.X)}.
+#' 
 corners.uncertainty.bound <- function(X, f.X, n=5000, first.corner=0, K.hat=NULL) {
   stopifnot(is.null(K.hat) || K.hat >= 0.)
   
@@ -152,6 +155,7 @@ widest.divided.box <- function(box) {
 #' @param f.X \eqn{f|_X}, the values of \eqn{f} on \eqn{X}
 #' @param K.hat the empirical Lipschitz constant of \eqn{f}
 #' @param box the top-left corner and the bottom-right corner of a hypercube contained in the domain. Defaults to \eqn{[0,1]^p}.
+#' 
 lower.bound.max.uncertainty <- function(X, f.X, K.hat, box=NULL) {
   if (is.null(box)) {
     p.dims = ncol(X)
@@ -175,6 +179,7 @@ lower.bound.max.uncertainty <- function(X, f.X, K.hat, box=NULL) {
 #' @param f.X \eqn{f|_X}, the values of \eqn{f} on \eqn{X}
 #' @param K.hat the empirical Lipschitz constant of \eqn{f}
 #' @param box the top-left corner and the bottom-right corner of a hypercube contained in the domain. Defaults to \eqn{[0,1]^p}.
+#' 
 upper.bound.max.uncertainty <- function(X, f.X, K.hat, box=NULL) {
   if (is.null(box)) {
     p.dims = ncol(X)
@@ -195,6 +200,7 @@ upper.bound.max.uncertainty <- function(X, f.X, K.hat, box=NULL) {
 #' @param f.X \eqn{f|_X}, the values of \eqn{f} on \eqn{X}
 #' @param K.hat the empirical Lipschitz constant of \eqn{f}
 #' @param tol solutions this close to the maximum uncertainty are good enough. Defaults to 0.001.
+#' 
 branch.and.bound.max.uncertainty <- function(X, f.X, K.hat=NULL, tol=1e-3) {
   stopifnot(max(X) <= 1. && min(X) >= 0.)
   stopifnot(is.null(K.hat) || K.hat >= 0.)
@@ -267,6 +273,7 @@ q.CI <- function(x, p, P) {
 #' @param K.hat the empirical Lipschitz constant of \eqn{f}
 #' @param n the number of samples. Defaults to 1000.
 #' @param confidence the size of the confidence bounds. Defaults to 0.95.
+#' 
 uncertainty.confidence.bounds <- function(X, f.X, K.hat, n=1000, confidence=0.95) {
   p.dims = ncol(X)
   

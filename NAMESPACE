@@ -1,3 +1,11 @@
 useDynLib(MiniMiniMaxUQ)
-exportPattern("^[[:alpha:]]+")
+export(
+  find.K.hat,
+  pointwise.uncertainty,
+  lower.bound.computational.burden,
+  corners.uncertainty.bound,
+  lower.bound.max.uncertainty,
+  upper.bound.max.uncertainty,
+  branch.and.bound.max.uncertainty,
+  uncertainty.confidence.bounds)
 importFrom(Rcpp, evalCpp)

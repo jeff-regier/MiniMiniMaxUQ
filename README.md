@@ -14,7 +14,7 @@ devtools::install_github("jeff-regier/MiniMiniMaxUQ")
 
 #### Example
 
-The code below invokes each of the functions exported by `MiniMiniMaxUQ`:
+The code below invokes each function exported by `MiniMiniMaxUQ`:
 ```R
 library(MiniMiniMaxUQ)
 

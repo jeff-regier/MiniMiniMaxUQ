@@ -21,12 +21,12 @@ License: \tab GPL (>= 2)\cr
 }
 }
 \author{
-Jeffrey C. Regier and Philip B. Stark
+Jeffrey Regier and Philip Stark
 
-Maintainer: Jeffrey Regier <jeff@stat.berkeley.edu>
+Maintainer: Jeffrey Regier \email{jeff@@stat.berkeley.edu}
 }
 \references{
-Jeffrey C. Regier and Philip B. Stark. "Mini-Minimax Uncertainty Quantification for Emulators." arXiv preprint arXiv:1303.3079 (2013).
+Jeffrey Regier and Philip Stark. "Mini-Minimax Uncertainty Quantification for Emulators." arXiv preprint arXiv:1303.3079 (2013).
 }
 \keyword{ package }
 \seealso{

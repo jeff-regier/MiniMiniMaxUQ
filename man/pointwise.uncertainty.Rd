@@ -6,15 +6,22 @@
 pointwise.uncertainty(X, f.X, K.hat, x)
 }
 \arguments{
-\item{X}{a finite subset of \eqn{[0, 1]^p} where \eqn{f} is observed}
+\item{X}{\eqn{X,}{} a matrix whose rows are points \eqn{\textrm{in } [0, 1]^p}{} where \eqn{f} is observed}
 
-\item{f.X}{\eqn{f|_X}, the values of \eqn{f} on \eqn{X}}
+\item{f.X}{\eqn{f|_X,}{} a vector whose values are \eqn{f} evaluated at each row of \eqn{X}}
 
-\item{K.hat}{the empirical Lipschitz constant of \eqn{f}}
+\item{K.hat}{\eqn{\hat{K},}{} the empirical Lipschitz constant of \eqn{f}}
 
 \item{x}{the point for which to compute pointwise uncertainty}
 }
 \description{
 Computes pointwise uncertainty
+}
+\examples{
+X <- expand.grid(1:9, 1:9) / 10
+f <- function(x) sin(x[1]) + cos(x[2])
+f.X <- apply(X, 1, f)
+K.hat <- find.K.hat(X, f.X)
+pointwise.uncertainty(X, f.X, K.hat, c(.55,.33))
 }
 

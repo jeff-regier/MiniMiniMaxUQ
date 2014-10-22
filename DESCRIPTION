@@ -3,13 +3,13 @@ Type: Package
 Title: Mini-Minimax Uncertainty Quantification for Emulators
 Version: 1.0
 Date: 2014-10-20
-Author: Jeffrey C. Regier and Philip B. Stark
-Maintainer: Jeffrey C. Regier <jeff@stat.berkeley.edu>
+Author: Jeffrey Regier and Philip Stark
+Maintainer: Jeffrey Regier <jeff@stat.berkeley.edu>
 Description: MiniMiniMaxUQ aims answers the following: How accurately can a
     particular black-box function f be emulated from a given set of data? How
     many evaluations of f are required to guarantee that f has been emulated to
     a given level of accuracy?
-License: GPL (>= 2)
+License: GPL (>= 2) | file LICENSE
 Imports:
     Rcpp (>= 0.11.3)
 LinkingTo: Rcpp

@@ -7,11 +7,11 @@ of the distribution of pointwise uncertainties.}
 uncertainty.confidence.bounds(X, f.X, K.hat, n = 1000, confidence = 0.95)
 }
 \arguments{
-\item{X}{a finite subset of \eqn{[0, 1]^p} where \eqn{f} is observed}
+\item{X}{\eqn{X,}{} a matrix whose rows are points \eqn{\textrm{in } [0, 1]^p}{} where \eqn{f} is observed}
 
-\item{f.X}{\eqn{f|_X}, the values of \eqn{f} on \eqn{X}}
+\item{f.X}{\eqn{f|_X,}{} a vector whose values are \eqn{f} evaluated at each row of \eqn{X}}
 
-\item{K.hat}{the empirical Lipschitz constant of \eqn{f}}
+\item{K.hat}{\eqn{\hat{K},}{} the empirical Lipschitz constant of \eqn{f}}
 
 \item{n}{the number of samples. Defaults to 1000.}
 
@@ -20,5 +20,12 @@ uncertainty.confidence.bounds(X, f.X, K.hat, n = 1000, confidence = 0.95)
 \description{
 Computes confidence bounds for 4 statistics (first quartile, median, third quartile, mean)
 of the distribution of pointwise uncertainties.
+}
+\examples{
+X <- expand.grid(1:9, 1:9) / 10
+f <- function(x) sin(x[1]) + cos(x[2])
+f.X <- apply(X, 1, f)
+K.hat <- find.K.hat(X, f.X)
+uncertainty.confidence.bounds(X, f.X, K.hat)
 }
 

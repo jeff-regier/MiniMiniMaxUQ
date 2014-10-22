@@ -18,33 +18,46 @@ sup.dist <- function(a, b) {
   lp_distance(a, b, -42.)
 }
 
-#' Finds the empirical Lipschitz constant of \eqn{f},
+#' Finds \eqn{\hat{K},}{} the empirical Lipschitz constant of \eqn{f},
 #' a lower bound on the Lipschitz constant of \eqn{f}.
-#' @param X a finite subset of \eqn{[0, 1]^p} where \eqn{f} is observed
-#' @param f.X \eqn{f|_X}, the values of \eqn{f} on \eqn{X}
-#' @param lp.norm the \eqn{L_p} norm for computing the distances between points in \eqn{X}. Defaults to sup-norm.
+#' @param X \eqn{X,}{} a matrix whose rows are points \eqn{\textrm{in } [0, 1]^p}{} where \eqn{f} is observed
+#' @param f.X \eqn{f|_X,}{} a vector whose values are \eqn{f} evaluated at each row of \eqn{X}
+#' @param lp.norm an integer (or \code{Inf}) specifying the \eqn{L_p} norm for computing the distances between points in \eqn{X}. Defaults to sup-norm.
 #' @param min.distance only pairs of points in \eqn{X} farther apart than this threshold are considered. Defaults to 0.
+#' @examples
+#' X <- expand.grid(1:9, 1:9) / 10
+#' f <- function(x) sin(x[1]) + cos(x[2])
+#' f.X <- apply(X, 1, f)
+#' find.K.hat(X, f.X)
 #' 
 find.K.hat <- function(X, f.X, lp.norm=Inf, min.distance=0) {
+  X <- as.matrix(X)
   stopifnot(max(X) <= 1. && min(X) >= 0.)
-  lp.norm.cpp = if (lp.norm == Inf) -42. else lp.norm
-  find_K_hat(as.matrix(X), f.X, lp.norm.cpp, min.distance)
+  lp.norm.cpp <- if (lp.norm == Inf) -42. else lp.norm
+  find_K_hat(X, f.X, lp.norm.cpp, min.distance)
 }
 
 #' Computes pointwise uncertainty
-#' @param X a finite subset of \eqn{[0, 1]^p} where \eqn{f} is observed
-#' @param f.X \eqn{f|_X}, the values of \eqn{f} on \eqn{X}
-#' @param K.hat the empirical Lipschitz constant of \eqn{f}
+#' @param X \eqn{X,}{} a matrix whose rows are points \eqn{\textrm{in } [0, 1]^p}{} where \eqn{f} is observed
+#' @param f.X \eqn{f|_X,}{} a vector whose values are \eqn{f} evaluated at each row of \eqn{X}
+#' @param K.hat \eqn{\hat{K},}{} the empirical Lipschitz constant of \eqn{f}
 #' @param x the point for which to compute pointwise uncertainty
+#' @examples
+#' X <- expand.grid(1:9, 1:9) / 10
+#' f <- function(x) sin(x[1]) + cos(x[2])
+#' f.X <- apply(X, 1, f)
+#' K.hat <- find.K.hat(X, f.X)
+#' pointwise.uncertainty(X, f.X, K.hat, c(.55,.33))
 #' 
 pointwise.uncertainty <- function(X, f.X, K.hat, x) {
+  X <- as.matrix(X)
   pointwise_uncertainty(X, f.X, K.hat, x)
 }
 
 #------------------------------------------------------
 
 compute.gamma.bar <-function(f.X, p, K.hat) {
-  p.dim.area = function(y) (sum(abs((2 * (f.X - y) / K.hat)^p)))
+  p.dim.area <- function(y) (sum(abs((2 * (f.X - y) / K.hat)^p)))
   optimize(p.dim.area, c(min(f.X), max(f.X)))$minimum
 }
 
@@ -58,26 +71,31 @@ unit.ball.volume <- function(lp.norm, p.dims) {
 }
 
 #' Computes a lower bound on the minimum computational burden.
-#' @param X a finite subset of \eqn{[0, 1]^p} where \eqn{f} is observed
-#' @param f.X \eqn{f|_X}, the values of \eqn{f} on \eqn{X}
+#' @param X \eqn{X,}{} a matrix whose rows are points \eqn{\textrm{in } [0, 1]^p}{} where \eqn{f} is observed
+#' @param f.X \eqn{f|_X,}{} a vector whose values are \eqn{f} evaluated at each row of \eqn{X}
+#' @param K.hat \eqn{\hat{K},}{} the empirical Lipschitz constant of \eqn{f}
 #' @param epsilon the maximum uncertainty allowed
 #' @param lp.norm the \eqn{L_p} norm for computing the distances between points in \eqn{[0, 1]^p}. Defaults to sup-norm.
-#' @param K.hat the empirical Lipschitz constant of \eqn{f}. Defaults to find.K.hat(X, f.X).
+#' @examples
+#' X <- expand.grid(1:9, 1:9) / 10
+#' f <- function(x) sin(x[1]) + cos(x[2])
+#' f.X <- apply(X, 1, f)
+#' K.hat <- find.K.hat(X, f.X)
+#' lower.bound.computational.burden(X, f.X, K.hat, epsilon=.1)
 #' 
-lower.bound.computational.burden <- function(X, f.X, epsilon, lp.norm=Inf, K.hat=NULL) {
+lower.bound.computational.burden <- function(X, f.X, K.hat, epsilon, lp.norm=Inf) {
+  X <- as.matrix(X)
+  
   stopifnot(max(X) <= 1. && min(X) >= 0.)
   stopifnot(epsilon >= 0.)
   stopifnot(lp.norm == Inf || lp.norm %% 1 == 0)
-  stopifnot(is.null(K.hat) || K.hat >= 0.)
+  stopifnot(K.hat >= 0.)
   
-  if (is.null(K.hat))
-    K.hat = find.K.hat(X, f.X, lp.norm)
+  p <- ncol(X)
+  gamma.bar <- compute.gamma.bar(f.X, p, K.hat)
   
-  p = ncol(X)
-  gamma.bar = compute.gamma.bar(f.X, p, K.hat)
-  
-  C = unit.ball.volume(lp.norm, p)
-  ceiling(epsilon^-p * (K.hat^p/C - sum((abs(f.X - gamma.bar))^p)))
+  C <- unit.ball.volume(lp.norm, p)
+  max(0, ceiling(epsilon^-p * (K.hat^p/C - sum((abs(f.X - gamma.bar))^p))))
 }
 
 #------------------------------------------------------
@@ -88,26 +106,30 @@ int.to.bits <- function(i, p.dims) {
 
 #' Computes a lower bound on the maximum uncertainty by evaluating
 #' the pointwise error at corners of the domain.
-#' @param X a finite subset of \eqn{[0, 1]^p} where \eqn{f} is observed
-#' @param f.X \eqn{f|_X}, the values of \eqn{f} on \eqn{X}
+#' @param X \eqn{X,}{} a matrix whose rows are points \eqn{\textrm{in } [0, 1]^p}{} where \eqn{f} is observed
+#' @param f.X \eqn{f|_X,}{} a vector whose values are \eqn{f} evaluated at each row of \eqn{X}
+#' @param K.hat \eqn{\hat{K},}{} the empirical Lipschitz constant of \eqn{f}
 #' @param n the number of consecutive corners to consider. Defaults to 5000.
 #' @param first.corner the first corner to consider. Defaults to 0.
-#' @param K.hat the empirical Lipschitz constant of \eqn{f}. Defaults to \code{find.K.hat(X, f.X)}.
+#' @examples
+#' X <- expand.grid(1:9, 1:9) / 10
+#' f <- function(x) sin(x[1]) + cos(x[2])
+#' f.X <- apply(X, 1, f)
+#' K.hat <- find.K.hat(X, f.X)
+#' corners.uncertainty.bound(X, f.X, K.hat)
 #' 
-corners.uncertainty.bound <- function(X, f.X, n=5000, first.corner=0, K.hat=NULL) {
-  stopifnot(is.null(K.hat) || K.hat >= 0.)
+corners.uncertainty.bound <- function(X, f.X, K.hat, n=5000, first.corner=0) {
+  X <- as.matrix(X)
+  stopifnot(K.hat >= 0.)
   
-  if (is.null(K.hat))
-    K.hat = find.K.hat(X, f.X, Inf)
-
-  p.dims = ncol(X)
-  max.uncertainty.lb = 0.
+  p.dims <- ncol(X)
+  max.uncertainty.lb <- 0.
   for (i in first.corner:min(first.corner + n, (2^p.dims-1))) {
-    bits = int.to.bits(i, p.dims)
-    cur.lb = pointwise_uncertainty(X, f.X, K.hat, bits)
+    bits <- int.to.bits(i, p.dims)
+    cur.lb <- pointwise_uncertainty(X, f.X, K.hat, bits)
     if (cur.lb > max.uncertainty.lb) {
       cat(sprintf("maximum uncertainty so far at corner # %d: %.3f\n", i, cur.lb))
-      max.uncertainty.lb = cur.lb
+      max.uncertainty.lb <- cur.lb
     }
   }
   
@@ -117,8 +139,8 @@ corners.uncertainty.bound <- function(X, f.X, n=5000, first.corner=0, K.hat=NULL
 #------------------------------------------------------
 
 random.point <- function(bottom.left, top.right) {
-  edge.lengths = top.right - bottom.left
-  offsets = runif(length(bottom.left))
+  edge.lengths <- top.right - bottom.left
+  offsets <- runif(length(bottom.left))
   bottom.left + edge.lengths * offsets
 }
 
@@ -127,21 +149,21 @@ mid.point.1d <- function(a, b) {
 }
 
 half.point <- function(a, b, dim.id) {
-  ret = a
+  ret <- a
   ret[dim.id] = mid.point.1d(a[dim.id], b[dim.id])
   ret
 }
 
 divide.box <- function(box, dim.id) {
-  sub.box.1 = rbind(box[1,], half.point(box[2,], box[1,], dim.id))
-  sub.box.2 = rbind(half.point(box[1,], box[2,], dim.id), box[2,])
+  sub.box.1 <- rbind(box[1,], half.point(box[2,], box[1,], dim.id))
+  sub.box.2 <- rbind(half.point(box[1,], box[2,], dim.id), box[2,])
   list(sub.box.1, sub.box.2)
 }
 
 widest.divided.box <- function(box) {
   tol = .0001
-  widths = box[2,] - box[1,]
-  widest.dim = which.max(widths)
+  widths <- box[2,] - box[1,]
+  widest.dim <- which.max(widths)
   if (widths[widest.dim] > tol)
     divide.box(box, widest.dim)
   else
@@ -151,93 +173,117 @@ widest.divided.box <- function(box) {
 #' Computes a lower bound on the maximum uncertainty within the specified box,
 #' by evaluating the pointwise error at the box's corners and at random points
 #' in the box's interior.
-#' @param X a finite subset of \eqn{[0, 1]^p} where \eqn{f} is observed
-#' @param f.X \eqn{f|_X}, the values of \eqn{f} on \eqn{X}
-#' @param K.hat the empirical Lipschitz constant of \eqn{f}
+#' @param X \eqn{X,}{} a matrix whose rows are points \eqn{\textrm{in } [0, 1]^p}{} where \eqn{f} is observed
+#' @param f.X \eqn{f|_X,}{} a vector whose values are \eqn{f} evaluated at each row of \eqn{X}
+#' @param K.hat \eqn{\hat{K},}{} the empirical Lipschitz constant of \eqn{f}
 #' @param box the top-left corner and the bottom-right corner of a hypercube contained in the domain. Defaults to \eqn{[0,1]^p}.
+#' @examples
+#' X <- expand.grid(1:9, 1:9) / 10
+#' f <- function(x) sin(x[1]) + cos(x[2])
+#' f.X <- apply(X, 1, f)
+#' K.hat <- find.K.hat(X, f.X)
+#' lower.bound.max.uncertainty(X, f.X, K.hat)
 #' 
 lower.bound.max.uncertainty <- function(X, f.X, K.hat, box=NULL) {
+  X <- as.matrix(X)
+  
   if (is.null(box)) {
-    p.dims = ncol(X)
-    box = rbind(rep(0, p.dims), rep(1, p.dims))
+    p.dims <- ncol(X)
+    box <- rbind(rep(0, p.dims), rep(1, p.dims))
   }
   
-  num.lb.samples = 10
-  bottom.left = box[1,]
-  top.right = box[2,]
-  get.rp = function() random.point(bottom.left, top.right)
-  random.pts = replicate(num.lb.samples, get.rp())
-  random.pts.mat = t(matrix(random.pts, ncol=num.lb.samples))
-  all.pts = rbind(random.pts.mat, bottom.left, top.right)
-  bnd.pointwise.uncertainty = function(x) pointwise_uncertainty(X, f.X, K.hat, x)
-  lower.bounds = apply(all.pts, 1, bnd.pointwise.uncertainty)
+  num.lb.samples <- 10
+  bottom.left <- box[1,]
+  top.right <- box[2,]
+  get.rp <- function() random.point(bottom.left, top.right)
+  random.pts <- replicate(num.lb.samples, get.rp())
+  random.pts.mat <- t(matrix(random.pts, ncol=num.lb.samples))
+  all.pts <- rbind(random.pts.mat, bottom.left, top.right)
+  bnd.pointwise.uncertainty <- function(x) pointwise_uncertainty(X, f.X, K.hat, x)
+  lower.bounds <- apply(all.pts, 1, bnd.pointwise.uncertainty)
   max(lower.bounds)
 }
 
 #' Computes an upper bound on the maximum uncertainty within the specified box.
-#' @param X a finite subset of \eqn{[0, 1]^p} where \eqn{f} is observed
-#' @param f.X \eqn{f|_X}, the values of \eqn{f} on \eqn{X}
-#' @param K.hat the empirical Lipschitz constant of \eqn{f}
+#' @param X \eqn{X,}{} a matrix whose rows are points \eqn{\textrm{in } [0, 1]^p}{} where \eqn{f} is observed
+#' @param f.X \eqn{f|_X,}{} a vector whose values are \eqn{f} evaluated at each row of \eqn{X}
+#' @param K.hat \eqn{\hat{K},}{} the empirical Lipschitz constant of \eqn{f}
 #' @param box the top-left corner and the bottom-right corner of a hypercube contained in the domain. Defaults to \eqn{[0,1]^p}.
+#' @examples
+#' X <- expand.grid(1:9, 1:9) / 10
+#' f <- function(x) sin(x[1]) + cos(x[2])
+#' f.X <- apply(X, 1, f)
+#' K.hat <- find.K.hat(X, f.X)
+#' upper.bound.max.uncertainty(X, f.X, K.hat)
 #' 
 upper.bound.max.uncertainty <- function(X, f.X, K.hat, box=NULL) {
+  X <- as.matrix(X)
+  
   if (is.null(box)) {
-    p.dims = ncol(X)
-    box = rbind(rep(0, p.dims), rep(1, p.dims))
+    p.dims <- ncol(X)
+    box <- rbind(rep(0, p.dims), rep(1, p.dims))
   }
   
-  bottom.left = box[1,]
-  top.right = box[2,]
-  top.deviations = f_deviations(X, K.hat, top.right)
-  bottom.deviations = f_deviations(X, K.hat, bottom.left)
-  paired.deviations = rbind(bottom.deviations, top.deviations)
-  greatest.deviations = apply(paired.deviations, 2, max)
+  bottom.left <- box[1,]
+  top.right <- box[2,]
+  top.deviations <- f_deviations(X, K.hat, top.right)
+  bottom.deviations <- f_deviations(X, K.hat, bottom.left)
+  paired.deviations <- rbind(bottom.deviations, top.deviations)
+  greatest.deviations <- apply(paired.deviations, 2, max)
   do_pointwise_uncertainty(f.X, greatest.deviations)
 }
 
 #' Computes the maximum uncertainty by a branch and bound algorithm.
-#' @param X a finite subset of \eqn{[0, 1]^p} where \eqn{f} is observed
-#' @param f.X \eqn{f|_X}, the values of \eqn{f} on \eqn{X}
-#' @param K.hat the empirical Lipschitz constant of \eqn{f}
+#' @param X \eqn{X,}{} a matrix whose rows are points \eqn{\textrm{in } [0, 1]^p}{} where \eqn{f} is observed
+#' @param f.X \eqn{f|_X,}{} a vector whose values are \eqn{f} evaluated at each row of \eqn{X}
+#' @param K.hat \eqn{\hat{K},}{} the empirical Lipschitz constant of \eqn{f}
 #' @param tol solutions this close to the maximum uncertainty are good enough. Defaults to 0.001.
+#' @examples
+#' X <- expand.grid(1:9, 1:9) / 10
+#' f <- function(x) sin(x[1]) + cos(x[2])
+#' f.X <- apply(X, 1, f)
+#' K.hat <- find.K.hat(X, f.X)
+#' branch.and.bound.max.uncertainty(X, f.X, K.hat)
 #' 
 branch.and.bound.max.uncertainty <- function(X, f.X, K.hat=NULL, tol=1e-3) {
+  X <- as.matrix(X)
+  
   stopifnot(max(X) <= 1. && min(X) >= 0.)
   stopifnot(is.null(K.hat) || K.hat >= 0.)
 
   if (is.null(K.hat))
-    K.hat = find.K.hat(X, f.X, Inf)
+    K.hat <- find.K.hat(X, f.X, Inf)
 
-  p.dims = ncol(X)
-  domain = rbind(rep(0, p.dims), rep(1, p.dims))
-  candidates = list(domain)
-  get.box.ub = function(box) upper.bound.max.uncertainty(X, f.X, K.hat, box)
-  upper.bounds = c(get.box.ub(domain))
-  max.lb = corners.uncertainty.bound(X, f.X, 10, 0, K.hat)
+  p.dims <- ncol(X)
+  domain <- rbind(rep(0, p.dims), rep(1, p.dims))
+  candidates <- list(domain)
+  get.box.ub <- function(box) upper.bound.max.uncertainty(X, f.X, K.hat, box)
+  upper.bounds <- c(get.box.ub(domain))
+  max.lb <- corners.uncertainty.bound(X, f.X, K.hat, 10, 0)
 
-  prev.max.lb = -42.
-  prev.max.ub = upper.bounds[1] + 42.
+  prev.max.lb <- -42.
+  prev.max.ub <- upper.bounds[1] + 42.
 
   while (length(candidates) != 0) {
-    cur.box = candidates[[1]]
-    candidates = candidates[-1]
+    cur.box <- candidates[[1]]
+    candidates <- candidates[-1]
 
-    cur.ub = upper.bounds[[1]]
-    upper.bounds = upper.bounds[-1]
+    cur.ub <- upper.bounds[[1]]
+    upper.bounds <- upper.bounds[-1]
     upper.bound.max.uncertainty(X, f.X, K.hat, cur.box)
 
     if (cur.ub > (max.lb + tol)) {
-      cur.lb = lower.bound.max.uncertainty(X, f.X, K.hat, cur.box)
-      if (cur.lb > max.lb) max.lb = cur.lb
-      children = widest.divided.box(cur.box)
-      candidates = c(candidates, children)
-      upper.bounds = c(upper.bounds, sapply(children, get.box.ub))
+      cur.lb <- lower.bound.max.uncertainty(X, f.X, K.hat, cur.box)
+      if (cur.lb > max.lb) max.lb <- cur.lb
+      children <- widest.divided.box(cur.box)
+      candidates <- c(candidates, children)
+      upper.bounds <- c(upper.bounds, sapply(children, get.box.ub))
     }
     
     if (length(upper.bounds) == 0)
       break
     
-    max.ub = max(upper.bounds)
+    max.ub <- max(upper.bounds)
     
     if (max.ub != prev.max.ub || max.lb != prev.max.lb) {
       cat(sprintf("max uncertainty is in [%.3f, %.3f]; queue length is %d\n", 
@@ -247,8 +293,8 @@ branch.and.bound.max.uncertainty <- function(X, f.X, K.hat=NULL, tol=1e-3) {
     if (max.lb > max.ub + tol)
       break
 
-    prev.max.lb = max.lb
-    prev.max.ub = max.ub
+    prev.max.lb <- max.lb
+    prev.max.ub <- max.ub
   }
   
   max.lb
@@ -268,29 +314,36 @@ q.CI <- function(x, p, P) {
 
 #' Computes confidence bounds for 4 statistics (first quartile, median, third quartile, mean)
 #' of the distribution of pointwise uncertainties.
-#' @param X a finite subset of \eqn{[0, 1]^p} where \eqn{f} is observed
-#' @param f.X \eqn{f|_X}, the values of \eqn{f} on \eqn{X}
-#' @param K.hat the empirical Lipschitz constant of \eqn{f}
+#' @param X \eqn{X,}{} a matrix whose rows are points \eqn{\textrm{in } [0, 1]^p}{} where \eqn{f} is observed
+#' @param f.X \eqn{f|_X,}{} a vector whose values are \eqn{f} evaluated at each row of \eqn{X}
+#' @param K.hat \eqn{\hat{K},}{} the empirical Lipschitz constant of \eqn{f}
 #' @param n the number of samples. Defaults to 1000.
 #' @param confidence the size of the confidence bounds. Defaults to 0.95.
+#' @examples
+#' X <- expand.grid(1:9, 1:9) / 10
+#' f <- function(x) sin(x[1]) + cos(x[2])
+#' f.X <- apply(X, 1, f)
+#' K.hat <- find.K.hat(X, f.X)
+#' uncertainty.confidence.bounds(X, f.X, K.hat)
 #' 
 uncertainty.confidence.bounds <- function(X, f.X, K.hat, n=1000, confidence=0.95) {
-  p.dims = ncol(X)
+  X <- as.matrix(X)
+  p.dims <- ncol(X)
   
-  rand.pts = matrix(runif(p.dims * n), ncol=p.dims)
-  wrapped.pointwise.uncertainty = function(x) pointwise_uncertainty(X, f.X, K.hat, x)
-  errors = apply(rand.pts, 1, wrapped.pointwise.uncertainty)
+  rand.pts <- matrix(runif(p.dims * n), ncol=p.dims)
+  wrapped.pointwise.uncertainty <- function(x) pointwise_uncertainty(X, f.X, K.hat, x)
+  errors <- apply(rand.pts, 1, wrapped.pointwise.uncertainty)
   
-  mu = mean(errors)
-  confidence2 = 1 - ((1 - confidence) / 2)
-  mu.error = qnorm(confidence2) * sd(errors) / sqrt(n)
+  mu <- mean(errors)
+  confidence2 <- 1 - ((1 - confidence) / 2)
+  mu.error <- qnorm(confidence2) * sd(errors) / sqrt(n)
 
-  q1 = q.CI(errors, 1/4, confidence)
-  q2 = q.CI(errors, 2/4, confidence)
-  q3 = q.CI(errors, 3/4, confidence)
-  mean.CI = c(mu - mu.error, mu + mu.error)
+  q1 <- q.CI(errors, 1/4, confidence)
+  q2 <- q.CI(errors, 2/4, confidence)
+  q3 <- q.CI(errors, 3/4, confidence)
+  mean.CI <- c(mu - mu.error, mu + mu.error)
 
-  df = as.data.frame(cbind(q1, q2, q3, mean.CI),
+  df <- as.data.frame(cbind(q1, q2, q3, mean.CI),
                      row.names=c("lower", "upper"))
   names(df) = c("1st Qu.", "Median", "3rd Qu.", "Mean")
   df

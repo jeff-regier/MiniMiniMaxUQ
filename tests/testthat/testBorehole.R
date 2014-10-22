@@ -50,7 +50,7 @@ f.X = apply(X, 1, borehole.hypercube)
 K.hat = find.K.hat(X, f.X)
 
 test_that("lower bound on computational burden is trivial---0 or less", {
-  expect_equal(max(lower.bound.computational.burden(X, f.X, 0.001, Inf, K.hat), 0), 0)
+  expect_equal(max(lower.bound.computational.burden(X, f.X, K.hat, 0.001, Inf), 0), 0)
 })
 
 test_that("uncertainty is 0 at all corners, when all corners are in X",{ 

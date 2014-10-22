@@ -3,21 +3,27 @@
 \alias{lower.bound.computational.burden}
 \title{Computes a lower bound on the minimum computational burden.}
 \usage{
-lower.bound.computational.burden(X, f.X, epsilon, lp.norm = Inf,
-  K.hat = NULL)
+lower.bound.computational.burden(X, f.X, K.hat, epsilon, lp.norm = Inf)
 }
 \arguments{
-\item{X}{a finite subset of \eqn{[0, 1]^p} where \eqn{f} is observed}
+\item{X}{\eqn{X,}{} a matrix whose rows are points \eqn{\textrm{in } [0, 1]^p}{} where \eqn{f} is observed}
 
-\item{f.X}{\eqn{f|_X}, the values of \eqn{f} on \eqn{X}}
+\item{f.X}{\eqn{f|_X,}{} a vector whose values are \eqn{f} evaluated at each row of \eqn{X}}
+
+\item{K.hat}{\eqn{\hat{K},}{} the empirical Lipschitz constant of \eqn{f}}
 
 \item{epsilon}{the maximum uncertainty allowed}
 
 \item{lp.norm}{the \eqn{L_p} norm for computing the distances between points in \eqn{[0, 1]^p}. Defaults to sup-norm.}
-
-\item{K.hat}{the empirical Lipschitz constant of \eqn{f}. Defaults to find.K.hat(X, f.X).}
 }
 \description{
 Computes a lower bound on the minimum computational burden.
+}
+\examples{
+X <- expand.grid(1:9, 1:9) / 10
+f <- function(x) sin(x[1]) + cos(x[2])
+f.X <- apply(X, 1, f)
+K.hat <- find.K.hat(X, f.X)
+lower.bound.computational.burden(X, f.X, K.hat, epsilon=.1)
 }
 

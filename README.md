@@ -1,9 +1,7 @@
 ### Mini-minimax uncertainty quantification for emulators
 =============
-
 [![Build Status](https://travis-ci.org/jeff-regier/MiniMiniMaxUQ.svg?branch=master)](https://travis-ci.org/jeff-regier/MiniMiniMaxUQ)
 [![Coverage Status](https://coveralls.io/repos/jeff-regier/MiniMiniMaxUQ/badge.svg?branch=master&service=github)](https://coveralls.io/github/jeff-regier/MiniMiniMaxUQ?branch=master)
-
 =============
 
 The `MiniMiniMaxUQ` R package implements the optimization and bounding procedures described in

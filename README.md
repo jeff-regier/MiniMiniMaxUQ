@@ -1,4 +1,4 @@
-### Mini-minimax uncertainty quantification for emulators
+Mini-minimax uncertainty quantification for emulators
 =============
 
 [![Build Status](https://travis-ci.org/jeff-regier/MiniMiniMaxUQ.svg?branch=master)](https://travis-ci.org/jeff-regier/MiniMiniMaxUQ)

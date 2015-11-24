@@ -6,7 +6,9 @@ Mini-minimax uncertainty quantification for emulators
 
 The `MiniMiniMaxUQ` R package implements the optimization and bounding procedures described in
 
-> [Jeffrey Regier and Philip Stark. "Mini-Minimax Uncertainty Quantification for Emulators." arXiv preprint arXiv:1303.3079 (2013).](http://arxiv.org/pdf/1303.3079.pdf)
+> [Jeffrey Regier and Philip Stark. "Mini-Minimax Uncertainty Quantification for Emulators."
+> In: *SIAM/ASA Journal on Uncertainty Quantification* 3.1 (2015), pp. 686–708.](
+> http://www.stat.berkeley.edu/~jeff/publications/regier2015miniminimax.pdf)
 
 #### Installation
 
